@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кликер Игра</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="light">
+
+  <div id="app-container">
+    <!-- Прогресс-бар -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+      <div id="progress-current">0 / 1000</div>
+      <div id="progress-count">x0</div>
+    </div>
+
+    <!-- Иконка настроек -->
+    <img src="assets/settings.png" alt="Настройки" id="settings-icon" />
+
+    <!-- Главный кликер -->
+    <div class="main">
+      <div id="count">0</div>
+      <img src="assets/click.png" alt="Click" id="click-image" />
+    </div>
+
+    <!-- Панель улучшений -->
+    <div class="sidebar" id="upgrades">
+      <div class="upgrade" data-upgrade="click">
+        <img src="assets/upgrades/click.png" alt="Click Upgrade" />
+        Улучшить клик — <span class="cost" id="cost-click">10</span>
+      </div>
+      <div class="upgrade" data-upgrade="autoclick">
+        <img src="assets/upgrades/autoclick.png" alt="AutoClick" />
+        Автоклик — <span class="cost" id="cost-autoclick">50</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive0">
+        <img src="assets/upgrades/passive0.png" alt="Passive0" />
+        Печь 1 — <span class="cost" id="cost-passive0">100</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive1">
+        <img src="assets/upgrades/passive1.png" alt="Passive1" />
+        Печь 2 — <span class="cost" id="cost-passive1">200</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive2">
+        <img src="assets/upgrades/passive2.png" alt="Passive2" />
+        Печь 3 — <span class="cost" id="cost-passive2">400</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive3">
+        <img src="assets/upgrades/passive3.png" alt="Passive3" />
+        Печь 4 — <span class="cost" id="cost-passive3">800</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive4">
+        <img src="assets/upgrades/passive4.png" alt="Passive4" />
+        Печь 5 — <span class="cost" id="cost-passive4">1600</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive5">
+        <img src="assets/upgrades/passive5.png" alt="Passive5" />
+        Печь 6 — <span class="cost" id="cost-passive5">3200</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive6">
+        <img src="assets/upgrades/passive6.png" alt="Passive6" />
+        Печь 7 — <span class="cost" id="cost-passive6">6400</span>
+      </div>
+      <div class="upgrade" data-upgrade="passive7">
+        <img src="assets/upgrades/passive7.png" alt="Passive7" />
+        Печь 8 — <span class="cost" id="cost-passive7">12800</span>
+      </div>
+    </div>
+
+    <!-- Модальное окно настроек -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Настройки</h2>
+
+        <label for="theme-select">Тема:</label>
+        <select id="theme-select">
+          <option value="light">Светлая</option>
+          <option value="dark">Тёмная</option>
+        </select>
+
+        <label for="scale-select">Масштаб интерфейса:</label>
+        <select id="scale-select">
+          <option value="1">Средний</option>
+          <option value="0.8">Меньше</option>
+          <option value="1.2">Больше</option>
+        </select>
+
+        <label for="music-toggle">Музыка:</label>
+        <input type="checkbox" id="music-toggle" checked />
+
+        <label for="volume">Громкость музыки:</label>
+        <input type="range" id="volume" min="0" max="100" value="50" />
+
+        <h3>Регистрация</h3>
+        <input type="email" id="email" placeholder="Ваш email" />
+        <button id="register-btn">Зарегистрироваться</button>
+        <button id="close-settings">Закрыть</button>
+      </div>
+    </div>
+
+    <button id="reset-button" class="reset-button">Сбросить прогресс</button>
+
+    <!-- Аудио -->
+    <audio id="bg-music" src="assets/music.mp3" loop></audio>
+    <audio id="click-sound" src="assets/click.wav"></audio>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
