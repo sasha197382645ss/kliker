@@ -1,3 +1,4 @@
+// === Элементы DOM ===
 const clickImage = document.getElementById("click-image");
 const countDisplay = document.getElementById("count");
 const upgradesContainer = document.getElementById("upgrades");
@@ -26,15 +27,42 @@ const state = {
   musicVolume: 0.5,
   clickVolume: 0.5,
   theme: "light",
-  scale: 1
+  scale: 1,
+  passiveMultiplier: 1,
+  autoClickMultiplier: 1
 };
 
-let maxCountAchieved = 0;
+let progressLevel = 0;
+let progressSinceLevelStart = 0;
 
 const upgradeKeys = [
   "click", "autoclick",
   "passive0", "passive1", "passive2", "passive3",
   "passive4", "passive5", "passive6", "passive7"
+];
+
+const prestigeUpgrades = [
+  {
+    id: "prestige1",
+    name: "x2 к пассивному доходу",
+    baseCost: 1,
+    effect: () => { state.passiveMultiplier *= 2; },
+    timesBought: 0
+  },
+  {
+    id: "prestige2",
+    name: "+1 к клику",
+    baseCost: 2,
+    effect: () => { state.clickPower += 1; },
+    timesBought: 0
+  },
+  {
+    id: "prestige3",
+    name: "x2 к автоклику",
+    baseCost: 3,
+    effect: () => { state.autoClickMultiplier *= 2; },
+    timesBought: 0
+  }
 ];
 
 function getUpgradeCost(key) {
@@ -55,6 +83,39 @@ function getUpgradeCost(key) {
   return Math.floor(basePrice * Math.pow(1.5, level));
 }
 
+function getPrestigeUpgradeCost(upg) {
+  return upg.baseCost * Math.pow(2, upg.timesBought);
+}
+
+function renderPrestigeUpgrades() {
+  const container = document.getElementById("prestige-upgrades");
+  if (!container) return;
+  container.innerHTML = "";
+
+  prestigeUpgrades.forEach(upg => {
+    const currentCost = getPrestigeUpgradeCost(upg);
+    const div = document.createElement("div");
+    div.className = "prestige-upgrade";
+    div.id = upg.id;
+    div.textContent = `${upg.name} — ${currentCost} шкалы (Куплено: ${upg.timesBought})`;
+
+    div.classList.toggle("disabled", progressLevel < currentCost);
+
+    div.addEventListener("click", () => {
+      if (progressLevel >= currentCost) {
+        upg.effect();
+        upg.timesBought++;
+        progressLevel -= currentCost;
+        saveState();
+        updateUI();
+        renderPrestigeUpgrades();
+      }
+    });
+
+    container.appendChild(div);
+  });
+}
+
 function updateUpgrades() {
   upgradeKeys.forEach(key => {
     const el = document.querySelector(`[data-upgrade='${key}']`);
@@ -67,95 +128,42 @@ function updateUpgrades() {
   });
 }
 
-let progressLevel = 0; // текущий уровень прогресса
-let progressSinceLevelStart = 0; // локальный счётчик прогресса в уровне
-
 function updateProgressBar() {
   const levelSize = 1000 * (progressLevel + 1);
-
   const percentage = Math.min((progressSinceLevelStart / levelSize) * 100, 100);
-
   progressFill.style.width = `${percentage}%`;
-
-  if (progressCurrent) {
-    progressCurrent.textContent = `${Math.floor(progressSinceLevelStart)} / ${levelSize}`;
-  }
-  if (progressCount) {
-    progressCount.textContent = `x${progressLevel}`;
-  }
+  if (progressCurrent) progressCurrent.textContent = `${Math.floor(progressSinceLevelStart)} / ${levelSize}`;
+  if (progressCount) progressCount.textContent = `x${progressLevel}`;
 }
 
-// Функция добавления очков прогресса
 function addProgressPoints(amount) {
   const levelSize = 1000 * (progressLevel + 1);
-
   progressSinceLevelStart += amount;
-
+  state.count += amount;
   if (progressSinceLevelStart >= levelSize) {
     progressSinceLevelStart -= levelSize;
     progressLevel++;
   }
-
   updateProgressBar();
   updateUI();
 }
 
-// При клике
 clickImage.addEventListener('click', () => {
   addProgressPoints(state.clickPower);
+  playClickSound();
 });
 
-// Пассивное добавление каждую секунду
 setInterval(() => {
-  const incomeThisTick = state.autoClick + state.passiveIncome;
+  const incomeThisTick = (state.autoClick * state.autoClickMultiplier) + (state.passiveIncome * state.passiveMultiplier);
   addProgressPoints(incomeThisTick);
 }, 1000);
 
-// Обработчик клика
-clickImage.addEventListener('click', () => {
-  addProgressPoints(state.clickPower); // добавляем очки за клик
-});
-
-// Пассивное прибавление каждую секунду
-setInterval(() => {
-  const incomeThisTick = state.autoClick + state.passiveIncome;
-  addProgressPoints(incomeThisTick);
-}, 1000);
-
-function updateUI() {
-  countDisplay.textContent = Math.floor(state.count);
-  updateProgressBar();
-  updateUpgrades();
-  saveState();
+function playClickSound() {
+  if (!state.clickVolume) return;
+  // const clickSound = new Audio('path/to/click.mp3');
+  // clickSound.volume = state.clickVolume;
+  // clickSound.play();
 }
-
-function saveState() {
-  const fullState = { ...state, progressLevel, maxCountAchieved };
-  localStorage.setItem("clickerGameState", JSON.stringify(fullState));
-}
-
-function loadState() {
-  const saved = JSON.parse(localStorage.getItem("clickerGameState"));
-  if (saved) {
-    Object.assign(state, saved);
-    progressLevel = saved.progressLevel || 0;
-    maxCountAchieved = saved.maxCountAchieved || state.count;
-  }
-  upgradeKeys.forEach(key => {
-    if (!(key in state.upgrades)) {
-      state.upgrades[key] = 0;
-    }
-  });
-}
-
-clickImage.addEventListener("click", () => {
-  if (state.musicOn && bgMusic.paused) {
-    bgMusic.play().catch(() => {});
-  }
-  state.count += state.clickPower;
-  maxCountAchieved = Math.max(maxCountAchieved, state.count);
-  updateUI();
-});
 
 upgradesContainer.addEventListener("click", e => {
   const upgradeEl = e.target.closest(".upgrade");
@@ -168,15 +176,46 @@ upgradesContainer.addEventListener("click", e => {
   if (key === "click") state.clickPower++;
   else if (key === "autoclick") state.autoClick++;
   else if (key.startsWith("passive")) state.passiveIncome++;
-  maxCountAchieved = Math.max(maxCountAchieved, state.count);
   updateUI();
 });
 
-setInterval(() => {
-  state.count += state.autoClick + state.passiveIncome;
-  maxCountAchieved = Math.max(maxCountAchieved, state.count);
-  updateUI();
-}, 1000);
+function updateUI() {
+  countDisplay.textContent = Math.floor(state.count);
+  updateProgressBar();
+  updateUpgrades();
+  renderPrestigeUpgrades();
+  saveState();
+}
+
+function saveState() {
+  const fullState = {
+    ...state,
+    progressLevel,
+    progressSinceLevelStart,
+    prestigeUpgrades: prestigeUpgrades.map(p => ({ id: p.id, timesBought: p.timesBought }))
+  };
+  localStorage.setItem("clickerGameState", JSON.stringify(fullState));
+}
+
+function loadState() {
+  const saved = JSON.parse(localStorage.getItem("clickerGameState"));
+  if (saved) {
+    Object.assign(state, saved);
+    progressLevel = saved.progressLevel || 0;
+    progressSinceLevelStart = saved.progressSinceLevelStart || 0;
+    if (saved.prestigeUpgrades) {
+      for (const upg of prestigeUpgrades) {
+        const savedUpg = saved.prestigeUpgrades.find(p => p.id === upg.id);
+        if (savedUpg) upg.timesBought = savedUpg.timesBought || 0;
+      }
+    }
+  }
+  upgradeKeys.forEach(key => {
+    if (!(key in state.upgrades)) {
+      state.upgrades[key] = 0;
+    }
+  });
+}
 
 if (settingsIcon && settingsModal && closeSettingsBtn) {
   settingsIcon.addEventListener("click", () => settingsModal.classList.remove("hidden"));
@@ -217,10 +256,13 @@ if (resetButton) {
       musicVolume: 0.5,
       clickVolume: 0.5,
       theme: "light",
-      scale: 1
+      scale: 1,
+      passiveMultiplier: 1,
+      autoClickMultiplier: 1
     });
     progressLevel = 0;
-    maxCountAchieved = 0;
+    progressSinceLevelStart = 0;
+    prestigeUpgrades.forEach(upg => upg.timesBought = 0);
     document.body.className = "light";
     bgMusic.volume = 0.5;
     if (musicToggle) musicToggle.checked = true;
@@ -252,7 +294,6 @@ if (musicVolume) {
   });
 }
 
-// Запуск
 loadState();
 bgMusic.volume = state.musicVolume;
 updateUI();

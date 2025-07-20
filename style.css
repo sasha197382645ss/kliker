@@ -229,3 +229,75 @@ body.dark .upgrade:hover:not(.disabled) {
 .reset-button:hover {
   background-color: #e03b3b;
 }
+
+/* Контейнер меню */
+#side-menu {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 180px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  font-family: sans-serif;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Верхнее окно с анимацией */
+#animated-window {
+  background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+  padding: 15px;
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+.animated-icon {
+  font-size: 24px;
+  animation: spin 4s linear infinite;
+}
+
+/* Нижнее окно с улучшениями */
+#prestige-upgrades {
+  padding: 10px;
+  border-top: 1px solid #aaa;
+}
+
+#prestige-upgrades h4 {
+  font-size: 14px;
+  margin: 0 0 8px;
+  color: #333;
+}
+
+.prestige-upgrade {
+  background-color: #f2f2f2;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.prestige-upgrade:hover {
+  background-color: #e0e0e0;
+}
+
+.prestige-upgrade.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Анимации */
+@keyframes pulse {
+  0% { box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+  50% { box-shadow: 0 0 20px rgba(255,255,255,1); }
+  100% { box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
